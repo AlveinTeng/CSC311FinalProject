@@ -104,8 +104,8 @@ def main():
     plt.plot(k_value, user_based, color = "red", label = 'student')
     plt.plot(k_value, item_based, color = 'blue', linestyle = '--' , label = 'item')
     plt.xlabel('k value')
-    plt.ylabel('validation accuracy')
-    plt.title('validation accuracy cs k value')
+    plt.ylabel('Test accuracy')
+    plt.title('test accuracy cs k value')
     plt.legend(loc= 'lower right')
     plt.show()
 
