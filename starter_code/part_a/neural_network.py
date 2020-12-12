@@ -106,10 +106,8 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
     optimizer = optim.SGD(model.parameters(), lr=lr)
     num_student = train_data.shape[0]
 
-    # cost = []
+    cost = []
     val_acc = []
-    # test_acc = []
-    train_acc = []
 
     for epoch in range(0, num_epoch):
         train_loss = 0.
@@ -131,19 +129,16 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
             train_loss += loss.item()
             optimizer.step()
 
-        # reg = (lamb / 2) * model.get_weight_norm()
-        # train_loss += reg
-        # acc_train = evaluate(model, zero_train_data, train_data)
+        reg = (lamb / 2) * model.get_weight_norm()
+        train_loss += reg
         valid_acc = evaluate(model, zero_train_data, valid_data)
         print("Epoch: {} \tTraining Cost: {:.6f}\t "
               "Valid Acc: {}".format(epoch, train_loss, valid_acc))
 
-        # cost.append(train_loss)
+        cost.append(train_loss)
         val_acc.append(valid_acc)
-        # train_acc.append(acc_train)
 
-    # return cost, val_acc
-    return val_acc
+    return cost, val_acc
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
@@ -188,48 +183,41 @@ def main():
     questions_num = train_matrix.shape[1]
 
 
-    lamb_index = 0
-
     k_values = [10, 50, 100, 200, 500]
     epochs = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
     # Set optimization hyperparameters.
     lr = 0.06
     num_epoch = 9
-    lamb = 0
-    test_result= []
-    # for k in k_values:
+    lambds = [0.001, 0.01, 0.1, 1]
+
     k = k_values[1]
     print(k)
-    model = AutoEncoder(questions_num, k)
-    results = train(model, lr, lamb, train_matrix,
+    for lamb in lambds:
+        print("Lambda is {}".format(lamb))
+        model = AutoEncoder(questions_num, k)
+        costs, validation_acc = train(model, lr, lamb, train_matrix,
                     zero_train_matrix,
                     valid_data, num_epoch)
-    test_acc = evaluate(model, zero_train_matrix, test_data)
-    print('Test accuracy is {}'.format(test_acc))
-    # validation_acc = results[0]
-    # train_acc = results[1]
-    plt.plot(epochs, results, color ='red', label = 'validation accuracy')
-    # plt.plot(epochs, train_acc, color ='blue', label = 'train accuracy')
-    plt.title('train and validation objectives vs epoches')
-    plt.xlabel('epoch')
-    plt.ylabel('accuracy')
-    plt.legend(loc ='lower right')
-    plt.show()
+        test_acc = evaluate(model, zero_train_matrix, test_data)
+        print('Test accuracy is {}'.format(test_acc))
 
-
-    # epochs = np.arange(num_epoch[best_k])
+    # plt.figure()
+    # plt.plot(epochs,validation_acc, color ='red', label = 'validation accuracy')
+    # plt.title('validation accuracy vs epoches')
+    # plt.legend(loc='lower right')
+    # plt.xlabel('epoch')
+    # plt.ylabel('accuracy')
     #
-    # fig, ax = plt.subplots(1, 2)
-    # ax[0].plot(epochs, res[0])
-    # ax[0].set_xlabel("Epoch")
-    # ax[0].set_ylabel("Acc")
-    # ax[0].set_title("Training Loss per Epoch")
-    # ax[1].set_xlabel("Epoch")
-    # ax[1].set_ylabel("Loss")
-    # ax[1].set_title("Validation Accuracy per Epoch")
-    # ax[1].plot(epochs, res[1])
+    # plt.figure()
+    # plt.plot(epochs, costs, color ='blue', label = 'train costs')
+    # plt.title('train cost vs epoches')
+    # plt.xlabel('epoch')
+    # plt.ylabel('cost')
+    # plt.legend(loc ='lower right')
     # plt.show()
+
+
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
