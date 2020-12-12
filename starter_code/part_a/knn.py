@@ -36,14 +36,13 @@ def knn_impute_by_item(matrix, valid_data, k):
     """
     #####################################################################
     # TODO:                                                             #
+    # Implement the function as described in the docstring.             #
+    #####################################################################
     nbrs = KNNImputer(n_neighbors=k)
     # We use NaN-Euclidean distance measure.
     mat = nbrs.fit_transform(matrix.transpose())
     acc = sparse_matrix_evaluate_item(valid_data, mat)
     print("At k={}, Accuracy by item: {}".format(k, acc))
-    # Implement the function as described in the docstring.             #
-    #####################################################################
-    # acc = None
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
