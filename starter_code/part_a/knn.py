@@ -20,7 +20,7 @@ def knn_impute_by_user(matrix, valid_data, k):
     # We use NaN-Euclidean distance measure.
     mat = nbrs.fit_transform(matrix)
     acc = sparse_matrix_evaluate(valid_data, mat)
-    print("Validation Accuracy by student: {}".format(acc))
+    print("At k={}, Accuracy by student: {}".format(k, acc))
     return acc
 
 
@@ -40,7 +40,7 @@ def knn_impute_by_item(matrix, valid_data, k):
     # We use NaN-Euclidean distance measure.
     mat = nbrs.fit_transform(matrix.transpose())
     acc = sparse_matrix_evaluate_item(valid_data, mat)
-    print("Validation Accuracy by item: {}".format(acc))
+    print("At k={}, Accuracy by item: {}".format(k, acc))
     # Implement the function as described in the docstring.             #
     #####################################################################
     # acc = None
@@ -48,6 +48,8 @@ def knn_impute_by_item(matrix, valid_data, k):
     #                       END OF YOUR CODE                            #
     #####################################################################
     return acc
+
+
 def sparse_matrix_evaluate_item(data, matrix, threshold=0.5):
     """ Given the sparse matrix represent, return the accuracy of the prediction on data.
     :param data: A dictionary {user_id: list, question_id: list, is_correct: list}
@@ -73,49 +75,40 @@ def main():
     val_data = load_valid_csv("../data")
     test_data = load_public_test_csv("../data")
 
-    print("Sparse matrix:")
-    print(sparse_matrix)
-    print("Shape of sparse matrix:")
-    print(sparse_matrix.shape)
-    k_value = [1, 6, 11, 16, 21, 26]
-    # Validation data
-    # results_user = []
-    # results_item = []
-    # for k in k_value:
-    #     results_user.append(knn_impute_by_user(sparse_matrix,val_data, k))
-    #     results_item.append(knn_impute_by_item(sparse_matrix, val_data, k))
-    # # for k in  k_value:
-    # #     results_item.append(knn_impute_by_item(sparse_matrix, val_data, k))
-    # plt.plot(k_value, results_user, color = "red", label = 'student')
-    # plt.plot(k_value, results_item, color = 'blue', linestyle = '--' , label = 'item')
-    # plt.xlabel('k value')
-    # plt.ylabel('validation accuracy')
-    # plt.title('validation accuracy cs k value')
-    # plt.legend(loc= 'lower right')
-    # plt.show()
-    # Test performance
-    user_based = []
-    item_based = []
-    for k in k_value:
-        user_based.append(knn_impute_by_user(sparse_matrix,test_data, k))
-        item_based.append(knn_impute_by_item(sparse_matrix, test_data, k))
-    # for k in  k_value:
-    #     results_item.append(knn_impute_by_item(sparse_matrix, val_data, k))
-    plt.plot(k_value, user_based, color = "red", label = 'student')
-    plt.plot(k_value, item_based, color = 'blue', linestyle = '--' , label = 'item')
-    plt.xlabel('k value')
-    plt.ylabel('Test accuracy')
-    plt.title('test accuracy cs k value')
-    plt.legend(loc= 'lower right')
-    plt.show()
-
     #####################################################################
     # TODO:                                                             #
     # Compute the validation accuracy for each k. Then pick k* with     #
     # the best performance and report the test accuracy with the        #
     # chosen k*.                                                        #
     #####################################################################
-    pass
+    k_value = [1, 6, 11, 16, 21, 26]
+    # Validation data
+    results_user = []
+    results_item = []
+    for k in k_value:
+        results_user.append(knn_impute_by_user(sparse_matrix, val_data, k))
+        results_item.append(knn_impute_by_item(sparse_matrix, val_data, k))
+    plt.plot(k_value, results_user, color="red", label='student')
+    plt.plot(k_value, results_item, color='blue', linestyle='--', label='item')
+    plt.xlabel('k value')
+    plt.ylabel('validation accuracy')
+    plt.title('validation accuracy vs k value')
+    plt.legend(loc='lower right')
+    plt.show()
+
+    # Test performance
+    user_based = []
+    item_based = []
+    for k in k_value:
+        user_based.append(knn_impute_by_user(sparse_matrix, test_data, k))
+        item_based.append(knn_impute_by_item(sparse_matrix, test_data, k))
+    plt.plot(k_value, user_based, color="red", label='student')
+    plt.plot(k_value, item_based, color='blue', linestyle='--', label='item')
+    plt.xlabel('k value')
+    plt.ylabel('Test accuracy')
+    plt.title('test accuracy vs k value')
+    plt.legend(loc='lower right')
+    plt.show()
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
