@@ -1,5 +1,6 @@
 from utils import *
 from torch.autograd import Variable
+import matplotlib.pyplot as plt
 
 import torch.nn as nn
 import torch.nn.functional as F
@@ -8,6 +9,9 @@ import torch.utils.data
 
 import numpy as np
 import torch
+
+from starter_code.utils import load_public_test_csv, load_valid_csv, \
+    load_train_sparse
 
 
 def load_data(base_path="../data"):
@@ -70,7 +74,10 @@ class AutoEncoder(nn.Module):
         # Implement the function as described in the docstring.             #
         # Use sigmoid activations for f and g.                              #
         #####################################################################
-        out = inputs
+        out = self.g(inputs)
+        out = F.sigmoid(out)
+        out = self.h(out)
+        out = F.sigmoid(out)
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -90,14 +97,19 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
     :param num_epoch: int
     :return: None
     """
-    # TODO: Add a regularizer to the cost function. 
-    
+    # TODO: Add a regularizer to the cost function.
+
     # Tell PyTorch you are training the model.
     model.train()
 
     # Define optimizers and loss function.
     optimizer = optim.SGD(model.parameters(), lr=lr)
     num_student = train_data.shape[0]
+
+    # cost = []
+    val_acc = []
+    # test_acc = []
+    train_acc = []
 
     for epoch in range(0, num_epoch):
         train_loss = 0.
@@ -119,9 +131,19 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
             train_loss += loss.item()
             optimizer.step()
 
+        # reg = (lamb / 2) * model.get_weight_norm()
+        # train_loss += reg
+        # acc_train = evaluate(model, zero_train_data, train_data)
         valid_acc = evaluate(model, zero_train_data, valid_data)
         print("Epoch: {} \tTraining Cost: {:.6f}\t "
               "Valid Acc: {}".format(epoch, train_loss, valid_acc))
+
+        # cost.append(train_loss)
+        val_acc.append(valid_acc)
+        # train_acc.append(acc_train)
+
+    # return cost, val_acc
+    return val_acc
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
@@ -162,16 +184,52 @@ def main():
     # validation set.                                                   #
     #####################################################################
     # Set model hyperparameters.
-    k = None
-    model = None
+
+    questions_num = train_matrix.shape[1]
+
+
+    lamb_index = 0
+
+    k_values = [10, 50, 100, 200, 500]
+    epochs = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
     # Set optimization hyperparameters.
-    lr = None
-    num_epoch = None
-    lamb = None
+    lr = 0.06
+    num_epoch = 9
+    lamb = 0
+    test_result= []
+    # for k in k_values:
+    k = k_values[1]
+    print(k)
+    model = AutoEncoder(questions_num, k)
+    results = train(model, lr, lamb, train_matrix,
+                    zero_train_matrix,
+                    valid_data, num_epoch)
+    test_acc = evaluate(model, zero_train_matrix, test_data)
+    print('Test accuracy is {}'.format(test_acc))
+    # validation_acc = results[0]
+    # train_acc = results[1]
+    plt.plot(epochs, results, color ='red', label = 'validation accuracy')
+    # plt.plot(epochs, train_acc, color ='blue', label = 'train accuracy')
+    plt.title('train and validation objectives vs epoches')
+    plt.xlabel('epoch')
+    plt.ylabel('accuracy')
+    plt.legend(loc ='lower right')
+    plt.show()
 
-    train(model, lr, lamb, train_matrix, zero_train_matrix,
-          valid_data, num_epoch)
+
+    # epochs = np.arange(num_epoch[best_k])
+    #
+    # fig, ax = plt.subplots(1, 2)
+    # ax[0].plot(epochs, res[0])
+    # ax[0].set_xlabel("Epoch")
+    # ax[0].set_ylabel("Acc")
+    # ax[0].set_title("Training Loss per Epoch")
+    # ax[1].set_xlabel("Epoch")
+    # ax[1].set_ylabel("Loss")
+    # ax[1].set_title("Validation Accuracy per Epoch")
+    # ax[1].plot(epochs, res[1])
+    # plt.show()
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
