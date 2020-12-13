@@ -74,8 +74,8 @@ def update_theta_beta(data, lr, theta, beta):
         y_i = sigmoid(z_i)
         theta_gradient[user_id[i]] += is_correct[i] - y_i
         beta_gradient[question_id[i]] += y_i - is_correct[i]
-    theta += (lr / len(theta)) * theta_gradient
-    beta += (lr / len(beta)) * beta_gradient
+    theta += (lr) * theta_gradient
+    beta += lr * beta_gradient
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
@@ -146,7 +146,7 @@ def main():
     # Tune learning rate and number of iterations. With the implemented #
     # code, report the validation and test accuracy.                    #
     #####################################################################
-    theta, beta, val_acc_lst, train_acc_lst = irt(train_data, val_data, 0.2, 520)
+    theta, beta, val_acc_lst, train_acc_lst = irt(train_data, val_data, 0.001, 120)
     plt.plot(val_acc_lst, label="validation acc")
     plt.plot(train_acc_lst, label="training acc")
     plt.title("Training Curve")
