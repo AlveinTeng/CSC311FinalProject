@@ -74,14 +74,12 @@ class AutoEncoder(nn.Module):
         # Implement the function as described in the docstring.             #
         # Use sigmoid activations for f and g.                              #
         #####################################################################
-        out = self.g(inputs)
-        out = F.sigmoid(out)
-        out = self.h(out)
-        out = F.sigmoid(out)
+        hidden = F.sigmoid(self.g(inputs))
+        output = F.sigmoid(self.h(hidden))
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
-        return out
+        return output
 
 
 def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
@@ -106,8 +104,7 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
     optimizer = optim.SGD(model.parameters(), lr=lr)
     num_student = train_data.shape[0]
 
-    cost = []
-    val_acc = []
+    train_cost, val_acc = [], []
 
     for epoch in range(0, num_epoch):
         train_loss = 0.
@@ -179,26 +176,19 @@ def main():
     # validation set.                                                   #
     #####################################################################
     # Set model hyperparameters.
-
-    questions_num = train_matrix.shape[1]
-
-
     k_values = [10, 50, 100, 200, 500]
-    epochs = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    k = k_values[1]
+    model = AutoEncoder(train_matrix.shape[1], k)
 
     # Set optimization hyperparameters.
     lr = 0.06
-    num_epoch = 9
+    epochs = np.arange(9)
     lambds = [0.001, 0.01, 0.1, 1]
 
-    k = k_values[1]
     print(k)
     for lamb in lambds:
         print("Lambda is {}".format(lamb))
-        model = AutoEncoder(questions_num, k)
-        costs, validation_acc = train(model, lr, lamb, train_matrix,
-                    zero_train_matrix,
-                    valid_data, num_epoch)
+        costs, validation_acc = train(model, lr, lamb, train_matrix, zero_train_matrix, valid_data, len(epochs))
         test_acc = evaluate(model, zero_train_matrix, test_data)
         print('Test accuracy is {}'.format(test_acc))
 
