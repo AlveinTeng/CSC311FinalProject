@@ -74,8 +74,8 @@ class AutoEncoder(nn.Module):
         # Implement the function as described in the docstring.             #
         # Use sigmoid activations for f and g.                              #
         #####################################################################
-        hidden = F.sigmoid(self.g(inputs))
-        output = F.sigmoid(self.h(hidden))
+        hidden = torch.sigmoid(self.g(inputs))
+        output = torch.sigmoid(self.h(hidden))
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -129,13 +129,13 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
         reg = (lamb / 2) * model.get_weight_norm()
         train_loss += reg
         valid_acc = evaluate(model, zero_train_data, valid_data)
-        print("Epoch: {} \tTraining Cost: {:.6f}\t "
-              "Valid Acc: {}".format(epoch, train_loss, valid_acc))
+        # print("Epoch: {} \tTraining Cost: {:.6f}\t "
+        #       "Valid Acc: {}".format(epoch, train_loss, valid_acc))
 
-        cost.append(train_loss)
+        train_cost.append(train_loss)
         val_acc.append(valid_acc)
 
-    return cost, val_acc
+    return train_cost, val_acc
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
