@@ -10,8 +10,8 @@ import torch.utils.data
 import numpy as np
 import torch
 
-from starter_code.utils import load_public_test_csv, load_valid_csv, \
-    load_train_sparse
+# from starter_code.utils import load_public_test_csv, load_valid_csv, \
+#     load_train_sparse
 
 
 def load_data(base_path="../data"):
@@ -74,8 +74,8 @@ class AutoEncoder(nn.Module):
         # Implement the function as described in the docstring.             #
         # Use sigmoid activations for f and g.                              #
         #####################################################################
-        hidden = torch.sigmoid(self.g(inputs))
-        output = torch.sigmoid(self.h(hidden))
+        hidden = F.sigmoid(self.g(inputs))
+        output = F.sigmoid(self.h(hidden))
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -129,8 +129,8 @@ def train(model, lr, lamb, train_data, zero_train_data, valid_data, num_epoch):
         reg = (lamb / 2) * model.get_weight_norm()
         train_loss += reg
         valid_acc = evaluate(model, zero_train_data, valid_data)
-        # print("Epoch: {} \tTraining Cost: {:.6f}\t "
-        #       "Valid Acc: {}".format(epoch, train_loss, valid_acc))
+        print("Epoch: {} \tTraining Cost: {:.6f}\t "
+              "Valid Acc: {}".format(epoch, train_loss, valid_acc))
 
         train_cost.append(train_loss)
         val_acc.append(valid_acc)
@@ -186,26 +186,27 @@ def main():
     lambds = [0.001, 0.01, 0.1, 1]
 
     print(k)
-    for lamb in lambds:
-        print("Lambda is {}".format(lamb))
-        costs, validation_acc = train(model, lr, lamb, train_matrix, zero_train_matrix, valid_data, len(epochs))
-        test_acc = evaluate(model, zero_train_matrix, test_data)
-        print('Test accuracy is {}'.format(test_acc))
+    # for lamb in lambds:
+    lamb = 0.001
+    print("Lambda is {}".format(lamb))
+    costs, validation_acc = train(model, lr, lamb, train_matrix, zero_train_matrix, valid_data, len(epochs))
+    test_acc = evaluate(model, zero_train_matrix, test_data)
+    print('Test accuracy is {}'.format(test_acc))
 
-    # plt.figure()
-    # plt.plot(epochs,validation_acc, color ='red', label = 'validation accuracy')
-    # plt.title('validation accuracy vs epoches')
-    # plt.legend(loc='lower right')
-    # plt.xlabel('epoch')
-    # plt.ylabel('accuracy')
-    #
-    # plt.figure()
-    # plt.plot(epochs, costs, color ='blue', label = 'train costs')
-    # plt.title('train cost vs epoches')
-    # plt.xlabel('epoch')
-    # plt.ylabel('cost')
-    # plt.legend(loc ='lower right')
-    # plt.show()
+    plt.figure()
+    plt.plot(epochs,validation_acc, color ='red', label = 'validation accuracy')
+    plt.title('validation accuracy vs epoches')
+    plt.legend(loc='lower right')
+    plt.xlabel('epoch')
+    plt.ylabel('accuracy')
+
+    plt.figure()
+    plt.plot(epochs, costs, color ='blue', label = 'train costs')
+    plt.title('train cost vs epoches')
+    plt.xlabel('epoch')
+    plt.ylabel('cost')
+    plt.legend(loc ='lower right')
+    plt.show()
 
 
     #####################################################################
