@@ -27,6 +27,8 @@ def load_data(base_path="../data"):
         user_id: list, is_correct: list}
     """
     new_train_matrix, new_sparse_train_matrix, valid_data, test_data = create_data(base_path)
+    # print(new_train_matrix)
+    # print(new_sparse_train_matrix)
     # train_matrix = load_train_sparse(base_path).toarray()
     # valid_data = load_valid_csv(base_path)
     # test_data = load_public_test_csv(base_path)
@@ -58,8 +60,8 @@ class AutoEncoder(nn.Module):
 
         # Define linear functions.
         self.g = nn.Linear(num_question, k)
-        self.l1 = nn.Linear(k, k)
-        self.l4 = nn.Linear(k, k)
+        # self.l1 = nn.Linear(k, k)
+        # self.l4 = nn.Linear(k, k)
         self.h = nn.Linear(k, num_question)
 
 
@@ -83,10 +85,10 @@ class AutoEncoder(nn.Module):
         # Implement the function as described in the docstring.             #
         # Use sigmoid activations for f and g.                              #
         #####################################################################
-        out1 = F.relu(self.g(inputs))
-        out2 = F.relu(self.l1(out1))
-        out5 = F.relu(self.l4(out2))
-        output = F.sigmoid(self.h(out5))
+        out1 = F.sigmoid(self.g(inputs))
+        # out2 = F.relu(self.l1(out1))
+        # out5 = F.relu(self.l4(out2))
+        output = F.sigmoid(self.h(out1))
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -214,18 +216,20 @@ def evaluate(model, train_data, valid_data):
 
         guess = 0
         for j, sub in enumerate(valid_data["subject_id"][i]):
-            # guess += output[0][sub].item()
-            if output[0][sub].item() >= 0.5:
-                guess += 1
+            guess += output[0][sub].item()
+            # if output[0][sub].item() >= 0.5:
+            #     guess += 1
         # guess = (guess / len(valid_data["subject_id"][i])) >= 0.5
-
-        guess = 1 if (guess / len(valid_data["subject_id"][i])) >= 0.5 else 0
+        # print(guess / len(valid_data["subject_id"][i]))
+        guess = 1 if (guess / len(valid_data["subject_id"][i])) >= 0.6 else 0
 
         # guess = output[0][valid_data["question_id"][i]].item() >= 0.5
         if guess == valid_data["is_correct"][i]:
             correct += 1
         total += 1
     return correct / float(total)
+    #     correct = guess
+    # return correct
 
 
 def main():
@@ -244,7 +248,7 @@ def main():
     epochs = np.arange(50)
 
     # Set optimization hyperparameters.
-    lr = 0.005
+    lr = 0.01
     lambds = [0.001, 0.01, 0.1, 1]
 
     k = k_values[2]
@@ -269,7 +273,7 @@ def main():
     plt.title('train cost vs epoches')
     plt.xlabel('epoch')
     plt.ylabel('cost')
-    plt.legend(loc ='lower right')
+    plt.legend(loc='lower right')
     plt.show()
 
 

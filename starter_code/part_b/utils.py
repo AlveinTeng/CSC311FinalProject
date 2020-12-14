@@ -67,8 +67,16 @@ def create_data(root_dir="/data"):
     question_data = load_qestion_meta(root_dir)
     valid_data = load_valid_csv(root_dir)
     test_data = load_public_test_csv(root_dir)
+    # Record the time that the subject is countered
+    new_train_matrix_nominator = np.empty((542, 388))
+    new_train_matrix_nominator[:] = np.NaN
+    # Record the time that the question is correctly answered
+    new_train_matrix_denominator = np.empty((542, 388))
+    new_train_matrix_denominator[:] = np.NaN
+    # The new train matrix
     new_train_matrix = np.empty((542, 388))
     new_train_matrix[:] = np.NaN
+
     new_sparse_train_matrix = np.empty((542, 388))
     new_sparse_train_matrix[:] = np.NaN
 
@@ -77,10 +85,29 @@ def create_data(root_dir="/data"):
         subject_list = question_data["subject_id"][question_id]
         train_data["subject_id"][i] = subject_list
         is_correct = train_data["is_correct"][i]
-        for j, sub in enumerate(subject_list):
-            new_train_matrix[q][sub] = is_correct
-            new_sparse_train_matrix[q][sub] = is_correct
 
+        for j, sub in enumerate(subject_list):
+            # print(np.isnan(new_train_matrix_denominator[q][sub]))
+            if np.isnan(new_train_matrix_denominator[q][sub]):
+                # print(1)
+                # print(new_train_matrix_denominator[q][sub])
+                new_train_matrix_denominator[q][sub] = 1
+                # print(new_train_matrix_denominator[q][sub])
+            else:
+                new_train_matrix_denominator[q][sub] += 1
+        for j, sub in enumerate(subject_list):
+            if np.isnan(new_train_matrix_nominator[q][sub]):
+                new_train_matrix_nominator[q][sub] = is_correct
+            else:
+                new_train_matrix_nominator[q][sub] += is_correct
+            # new_sparse_train_matrix[q][sub] = is_correct
+    # print(new_train_matrix_nominator)
+    # print(new_train_matrix_denominator)
+    for i in range(new_train_matrix.shape[0]):
+        for j in range(new_train_matrix.shape[1]):
+            if new_train_matrix_denominator[i][j] != np.NaN:
+                new_train_matrix[i][j] = new_train_matrix_nominator[i][j] / new_train_matrix_denominator[i][j]
+    new_sparse_train_matrix = new_train_matrix.copy()
     for i, q in enumerate(valid_data["user_id"]):
         question_id = valid_data["question_id"][i]
         subject_list = question_data["subject_id"][question_id]
