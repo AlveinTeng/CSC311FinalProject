@@ -8,10 +8,12 @@ def sigmoid(x):
     """
     return np.exp(x) / (1 + np.exp(x))
 
+
 def log_p_cij(theta, beta, q_id_j, u_id_i, is_c_ij):
     if is_c_ij:
         return theta[u_id_i] - beta[q_id_j] - np.logaddexp(0, theta[u_id_i] - beta[q_id_j])
     return -np.logaddexp(0, theta[u_id_i] - beta[q_id_j])
+
 
 def neg_log_likelihood(data, theta, beta):
     """ Compute the negative log-likelihood.
@@ -101,18 +103,23 @@ def irt(data, val_data, lr, iterations):
 
     val_acc_lst = []
     train_acc_lst = []
+    train_lklihood = []
+    val_lklihood = []
 
     for i in range(iterations):
-        neg_lld = neg_log_likelihood(data, theta=theta, beta=beta)
+        neg_lld_train = neg_log_likelihood(data, theta=theta, beta=beta)
+        neg_lld_val = neg_log_likelihood(val_data, theta=theta, beta=beta)
         val_score = evaluate(data=val_data, theta=theta, beta=beta)
         train_score = evaluate(data=data, theta=theta, beta=beta)
         val_acc_lst.append(val_score)
         train_acc_lst.append(train_score)
-        print("i: {}, NLLK: {} \t Score: {}".format(i, neg_lld, val_score))
+        # print("i: {}, NLLK: {} \t Score: {}".format(i, neg_lld, val_score))
         theta, beta = update_theta_beta(data, lr, theta, beta)
+        train_lklihood.append(-neg_lld_train)
+        val_lklihood.append(-neg_lld_val)
 
     # TODO: You may change the return values to achieve what you want.
-    return theta, beta, val_acc_lst, train_acc_lst
+    return theta, beta, val_acc_lst, train_acc_lst, train_lklihood, val_lklihood
 
 
 def evaluate(data, theta, beta):
@@ -130,8 +137,7 @@ def evaluate(data, theta, beta):
         x = (theta[u] - beta[q]).sum()
         p_a = sigmoid(x)
         pred.append(p_a >= 0.5)
-    return np.sum((data["is_correct"] == np.array(pred))) \
-           / len(data["is_correct"])
+    return np.sum((data["is_correct"] == np.array(pred))) / len(data["is_correct"])
 
 
 def main():
@@ -146,12 +152,21 @@ def main():
     # Tune learning rate and number of iterations. With the implemented #
     # code, report the validation and test accuracy.                    #
     #####################################################################
-    theta, beta, val_acc_lst, train_acc_lst = irt(train_data, val_data, 0.001, 120)
+    theta, beta, val_acc_lst, train_acc_lst, train_lklihood, val_lklihood = irt(train_data, val_data, 0.001, 120)
     plt.plot(val_acc_lst, label="validation acc")
     plt.plot(train_acc_lst, label="training acc")
     plt.title("Training Curve")
     plt.xlabel("Iteration")
     plt.ylabel("Accuracy")
+    plt.legend()
+    plt.show()
+
+    # plot log-likelihood of training and validation
+    plt.plot(train_lklihood, label="training log-likelihood")
+    plt.plot(val_lklihood, label="validation log-likelihood")
+    plt.title("Iterations VS Log-likelihood")
+    plt.xlabel("Iteration")
+    plt.ylabel("Log-likelihood")
     plt.legend()
     plt.show()
     #####################################################################
